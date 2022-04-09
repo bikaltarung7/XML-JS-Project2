@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>XML and JavaScript</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+        body {
+            width: 50%;
+            margin: auto;
+            background-color: mintcream;
+        }
+
+        th {
+            background-color: lightseagreen;
+        }
+
+        td {
+            background-color: mediumaquamarine;
+        }
+    </style>
+</head>
+
+<body>
+    <p>
+    <table id="t_countries" border="1">
+        <tr>
+            <th>Country Name</th>
+            <th>Capital</th>
+            <th>Unemployment</th>
+            <th>Total GDP</th>
+        </tr>
+    </table>
+    </p>
+    <script>
+        $(document).ready(function () {
+            $.ajax(
+                {
+                    url: 'Country.xml',
+                    dataType: 'xml',
+                    success: function (data) {
+                        showCountries(data);
+                    },
+                    error: function () {
+                        console.log('Error');
+                    }
+                }
+            )
+
+            function showCountries(countryData) {
+                // get all country elements
+                let countries = $(countryData).find('country');
+                // loop throug each country element
+                $.each(countries, function (index, country) {
+                    // get name, capital id, unemployment and total gdp
+                    let name = $(country).find('name').first().text();
+                    let capital_id = $(country).attr('capital');
+                    let unemp = $(country).find('unemployment').text();
+                    let gdp = $(country).find('gdp_total').text();
+
+                    let capital;
+                    //get all cities and loop through each of them
+                    $.each($(country).find('city'), function (city_idx, city) {
+                        // comapre city id with capital id to get capital city name
+                        if ($(city).attr('id') == capital_id) {
+                            capital = $(city).find('name').first().text();
+                        }
+                    });
+
+                    // prepare table row for country
+                    let row = '<tr>'
+                        + '<td>' + name + '</td>'
+                        + '<td>' + capital + '</td>'
+                        + '<td>' + unemp + '</td>'
+                        + '<td>' + gdp + '</td>'
+                        + '</tr>'
+                    // append the row to the table
+                    $('#t_countries').append(row);
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>
