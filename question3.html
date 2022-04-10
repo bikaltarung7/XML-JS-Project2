@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>XML and JavaScript</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Raleway&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            width: 80%;
+            margin: 10px auto;
+            background-color: mintcream;
+            font-family: 'Raleway', sans-serif;
+        }
+
+        .headline {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .box {
+            background-color: honeydew;
+            width: 30%;
+            float: left;
+            border-radius: 5px;
+            border: 1px solid gray;
+            padding: 5px;
+            margin: 5px;
+            height: 350px;
+            box-shadow: 5px 5px rgb(209, 207, 207);
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        ul {
+            list-style-type: none;
+        }
+
+        .thumbnail {
+            height: 200px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .publish {
+            font-size: 15px;
+        }
+
+        #header {
+            margin: 2px 45px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="header">
+        <form action="">
+            <input type="text" id="country" placeholder="ca">
+            <input type="button" id="btn" value="Get Headlines">
+        </form>
+        <p id="loc">
+
+        </p>
+    </div>
+    <div>
+        <ul id="news">
+
+        </ul>
+    </div>
+    <script>
+        $(document).ready(function () {
+            // API key
+            let apikey = "73c3055924df42ef9b6f5916afe1c4fa";
+
+            let country_code = 'ca'
+
+            // invoke the function to get headlines on page load with default country code
+            getHeadlines(country_code);
+
+            // action on button click event
+            $("#btn").click(function () {
+                // get user entered country code
+                country_code = $('#country').val();
+                // invoke function to get headlines
+                getHeadlines(country_code);
+            });
+
+            // function to fetch headlines using news API
+            function getHeadlines(country) {
+                // API url preparation
+                let url = 'https://newsapi.org/v2/top-headlines?country=' + country + '&apiKey=' + apikey;
+
+                // get data from API
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => showHeadlines(data))
+                    .catch(error => console.log(error));
+            }
+
+            // function to extract and show headlines
+            function showHeadlines(data) {
+                // clear all items if any
+                $("#news").empty();
+
+                $("#loc").html('Top news headlines from ' + country_code.toUpperCase());
+                
+                // extract headlines from data
+                let articles = data.articles;
+
+                // loop through each headline
+                $.each(articles, function (idx, article) {
+                    if (idx < 10) {
+                        // extract required data
+                        let source = article.source.name;
+                        let title = article.title;
+                        let url = article.url;
+                        let img_url = article.urlToImage;
+                        let published_date = article.publishedAt.replace("T", " ").substr(0, 16);
+
+                        // prepare headline data to show
+                        let headline = "<li>"
+                            + "<ul class='box'>"
+                            + "<li>" + source + "</li>"
+
+                        // do not add img tag if there is no uamge url
+                        if (img_url != null)
+                            headline += "<li><img class='thumbnail' src='" + img_url + "'/></li>"
+
+                        headline += "<li><a class='headline' href=" + url + ">" + title + "</a></li>"
+                            + "<li class='publish'>" + published_date + "</li>"
+                            + "</ul>"
+                            + "</li>"
+
+                        // append prepared headline to list
+                        $("#news").append(headline);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>
