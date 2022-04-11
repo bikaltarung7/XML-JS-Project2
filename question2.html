@@ -1,0 +1,120 @@
+<!-- /*********************************************************************************
+* ITC5202 – Project
+* I declare that this assignment is my own work in accordance with Humber Academic Policy.
+* No part of this assignment has been copied manually or electronically from any other source
+* (including web sites) or distributed to other students.
+*
+* Group member Name: Bikal Thapa Magar| Merin Joe Chandy 
+    Student IDs: N01414695 | N01482121 
+    Date: 2022/04/10
+*
+********************************************************************************/ -->
+<html>
+
+<head>
+    <title>ITC5202</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <style>
+        .View-button {
+            color: white;
+            background-color: royalblue;
+            border-radius: 0.5px;
+        }
+
+        .details {
+            background-color: aqua;
+
+        }
+
+        .name {
+            font-weight: bolder;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body>
+    <form>
+        <h4>Enter a country name : <input type="text" id="Cname">
+            <input class="View-button" type="button" value="Country Details" id="find">
+        </h4>
+    </form>
+    <p id="demo">
+    <table class="details" border="1">
+        <thead></thead>
+        <tbody></tbody>
+    </table>
+    </p>
+    <script>
+        $(document).ready(function () {
+
+            $("#find").click(function () {
+                $("#demo").find("thead").empty();
+                $("#demo").find("tbody").empty();
+                $.ajax({
+                    url: "country-json.json",
+                    success: function (data) {
+                        var countries = data.mondial.country;
+                        var countryName = $("#Cname").val();
+                        $.each(countries, function (index, country) {
+                            if (countryName == country.name) {
+                                var entries = country.province ? country.province : country.city;
+                                if (country.province) {
+                                    entries = country.province;
+                                    var head = "<th>Province Name</th><th>Local Name</th><th>Population (2011)</th><th>No of cities</th>"
+                                    $("#demo").find("thead").append(head);
+                                } else if (country.city) {
+                                    entries = country.city;
+                                    var head = "<th>City Name</th><th>Local Name</th><th>Population (2011)</th><th>No of cities</th>"
+                                    $("#demo").find("thead").append(head);
+                                } else {
+                                    entries = [];
+                                }
+                                if ($.isArray(entries)) {
+                                    $.each(entries, function (index, entry) {
+                                        var name = entry.name;
+                                        var localName = entry.localname ? entry.localname : "NA";
+                                        var population;
+                                        var cities = entry.city ? entry.city.length : "NA";
+                                        if (cities == null) {
+                                            cities = "NA";
+                                        }
+                                        $.each(entry.population, function (index, year) {
+                                            if (year._year == 2011) {
+                                                population = year.__text;
+                                            } else {
+                                                population = "No data available for 2011"
+                                            }
+                                        })
+                                        var row = "<tr><td>" + name + "</td><td>" + localName + "</td><td>" + population + "</td> <td>" + cities + "</td></tr>";
+                                        $("#demo").find("tbody").append(row);
+                                    })
+                                } else {
+                                    var population;
+                                    $.each(entries.population, function (index, year) {
+                                        if (year._year == 2011) {
+                                            population = year.__text;
+                                        } else {
+                                            population = "No data available for 2011"
+                                        }
+                                    })
+                                    var localName = entries.localname ? entries.localname : "NA";
+                                    var cities = entries.city ? entries.city.length : "NA";
+                                    if (cities == null) {
+                                        cities = "NA";
+                                    }
+                                    var row = "<tr><td>" + entries.name + "</td><td>" + localName + "</td><td>" + population + "</td> <td>" + cities + "</td></tr>";
+                                    $("#demo").find("tbody").append(row);
+                                }
+                                return;
+                            }
+                        });
+                    },
+                    error: function () { alert('Error!') }
+                });
+            });
+        });	
+    </script>
+</body>
+
+</html>
