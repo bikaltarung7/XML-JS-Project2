@@ -64,6 +64,7 @@
         #header {
             margin: 2px 45px;
         }
+        
     </style>
 </head>
 
@@ -73,6 +74,8 @@
             <input type="text" id="country" placeholder="ca">
             <input type="button" id="btn" value="Get Headlines">
         </form>
+        <br/>
+        <button id="translate">Translate to English</button>
         <p id="loc">
 
         </p>
@@ -97,6 +100,7 @@
                 // get user entered country code
                 country_code = $('#country').val();
                 // invoke function to get headlines
+                country_code = country_code.trim() == '' ? 'ca': country_code;
                 getHeadlines(country_code);
             });
 
@@ -114,6 +118,7 @@
 
             // function to extract and show headlines
             function showHeadlines(data) {
+                console.log(data);
                 // clear all items if any
                 $("#news").empty();
 
@@ -151,6 +156,32 @@
                     }
                 });
             }
+            
+            // function to translate headlines
+            $("#translate").click(function(){
+                let cards = $('.box');
+                $.each(cards,async function(index, card){
+                    let headline = $(card).find('.headline');
+
+                    // prepare url 
+                    var url = "https://just-translated.p.rapidapi.com/?lang=en&text=" + headline.text();
+                    $.ajax({
+                        url: url,
+                        method: "GET",
+                        headers: {
+                            "X-RapidAPI-Host": "just-translated.p.rapidapi.com",
+                            "X-RapidAPI-Key": "6453c415f9msha339907a1a0f54dp1062e3jsndff4a19aca6a"
+                        },
+                        success: async function (data) {
+                            // replace the headline
+                            headline.text(data.text[0]);
+                        },
+                        error: function (error) {
+                            console.log(error);
+                        }
+                    });
+                })
+            });
         });
     </script>
 </body>

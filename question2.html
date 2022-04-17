@@ -55,9 +55,9 @@
                     url: "country-json.json",
                     success: function (data) {
                         var countries = data.mondial.country;
-                        var countryName = $("#Cname").val();
+                        var countryName = $("#Cname").val().toUpperCase();
                         $.each(countries, function (index, country) {
-                            if (countryName == country.name) {
+                            if (countryName == country.name.toUpperCase()) {
                                 var entries = country.province ? country.province : country.city;
                                 if (country.province) {
                                     entries = country.province;
