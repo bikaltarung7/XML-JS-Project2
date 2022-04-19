@@ -1,0 +1,208 @@
+<!-- /*********************************************************************************
+* ITC5202 – Project
+* I declare that this assignment is my own work in accordance with Humber Academic Policy.
+* No part of this assignment has been copied manually or electronically from any other source
+* (including web sites) or distributed to other students.
+*
+* Group member Name: Bikal Thapa Magar| Merin Joe Chandy 
+    Student IDs: N01414695 | N01482121 
+    Date: 2022/04/18
+*
+********************************************************************************/ -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<title>XML and JavaScript</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+	<style>
+		body {
+			width: 70%;
+			margin: 10px auto;
+			background-color: mintcream;
+		}
+
+		img {
+			height: 200px;
+			border: 1px solid black;
+		}
+
+		div {
+			margin: 10px auto;
+		}
+
+		ul {
+			list-style-type: none;
+		}
+
+		/* .container{
+            border: 1px solid black;
+            border-radius: 5px;
+        } */
+		.flag_container {
+			float: left;
+		}
+
+		.info_conatiner {
+			float: left;
+			width: 50%;
+		}
+	</style>
+</head>
+
+<body>
+	<div>
+		<form>
+			<input type="text" id="country" placeholder="Enter country name" autofocus>
+			<input type="button" id="search_btn" value="Search">
+		</form>
+	</div>
+	<div class="container">
+		<div class="flag_container">
+		</div>
+		<div class="info_conatiner">
+			<ul id="loc">
+			</ul>
+		</div>
+	</div>
+	<script>
+		$(document).ready(function () {
+			// event handler for search button click
+			$("#search_btn").click(() => {
+				let country = $("#country").val();
+				getCountryInfo(country);
+			});
+
+			// function to fetch data for given country
+			function getCountryInfo(country) {
+				// prepare url
+				var url = "https://restcountries.com/v2/name/" + country
+
+				// api call using ajax
+				$.ajax({
+					url: url,
+					success: function (data) {
+						showCountry(data)
+					},
+					fail: function () {
+						console.log('Error')
+						$(".flag_container").html("Data not found");
+					}
+				});
+			}
+
+			async function getcountryVaccInfo(country, code) {
+
+				let temp;
+				const settings = {
+					"async": true,
+					"crossDomain": true,
+					"url": "https://vaccovid-coronavirus-vaccine-and-treatment-tracker.p.rapidapi.com/api/npm-covid-data/country-report-iso-based/" + country + "/" + code,
+					"method": "GET",
+					"headers": {
+						"X-RapidAPI-Host": "vaccovid-coronavirus-vaccine-and-treatment-tracker.p.rapidapi.com",
+						"X-RapidAPI-Key": "01bb9a84e8mshde021b7202499b4p1aab42jsnd0081342d6c2"
+					}
+				};
+				return await $.ajax(settings).done(function (response) {
+					console.log(response);
+					return response;
+				});
+
+
+			}
+
+			// function to get country names from country codes
+			// takes a list of country codes and returns a comma separated country name values
+			function getCountryNames(country_codes) {
+				let countries = ",";
+
+				// loop through each of the country codes
+				$.each(country_codes, function (index, country_code) {
+					// prepare url
+					let url = "https://restcountries.com/v2/alpha/" + country_code
+
+					// a comma as prefix except for the first country
+					let prefix = index == 0 ? "" : ", "
+					// api call
+					$.ajax({
+						url: url,
+						success: function (data) {
+							// concatenate countries name
+							$("#neighbours").append(prefix + data.name);
+							// countries = countries.concat(", "+data.name);
+						},
+						fail: function () {
+							console.log('Error orrured');
+						}
+					});
+				});
+			}
+
+			// function for adding comma in numbers
+			function addCommas(number) {
+				string = number.toString();
+				var len = string.length;
+				string = string.split("");
+				for (var i = 3; i < len; i = i + 3) {
+					string.splice(len - i, 0, ",");
+				}
+				return string.join("");
+			}
+
+			function showCountry(data) {
+				// clear the existing data if any
+				$("#loc").empty();
+				$(".flag_container").empty();
+
+				// grab the required data
+				let country = data[0];
+				let code = country.alpha3Code;
+				let name = country.name;
+				let native_name = country.nativeName;
+				let area = addCommas(country.area) + " km<sup>2</sup>"
+				let region = country.region;
+				let sub_region = country.subregion;
+				let image_url = country.flag;
+				let currency = country.currencies[0].code;
+				let currency_name = country.currencies[0].name;
+				// invoke function to get comma separated list of neighbouring countries
+
+				// prepare html output 
+				let flag_image = "<img src=" + image_url + ">"
+
+				let output = "<li><strong>Country Name:</strong> " + name + "</li>"
+					+ "<li><strong>Native Name:</strong> " + native_name + "</li>"
+					+ "<li><strong>Region:</strong> " + region + " (" + sub_region + ")</li>"
+					+ "<li><strong>Area:</strong> " + area + "</li>"
+					+ "<li><strong>Neighbours: </strong><span id='neighbours'><span></li>"
+
+				// append html codes
+				$("#loc").append(output);
+				$(".flag_container").html(flag_image);
+
+				// call function to populate country names
+				getCountryNames(country.borders);
+
+				// getting covid 19 data
+				let vaccineData = getcountryVaccInfo(name, code);
+				vaccineData.then((data) => {
+					data.map((item) => {
+						output = "<h3>Covid-19 Statistics of  " + item.Country + "</h3>"
+							+ "<li> <strong> New Cases: </strong> " + item.NewCases + " </li>"
+							+ "<li> <strong> New Deaths: </strong> " + item.NewDeaths + " </li>"
+							+ "<li> <strong> Recovered: </strong> " + item.NewRecovered + " </li>"
+							+ "<li> <strong> Test Percentage: </strong> " + item.Test_Percentage + " </li>"
+
+						$("#loc").append(output);
+					});
+				});	
+			}
+		});
+
+
+	</script>
+</body>
+
+</html>
